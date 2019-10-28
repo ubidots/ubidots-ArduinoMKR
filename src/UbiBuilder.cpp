@@ -21,20 +21,27 @@ Developed and maintained by Jose Garcia for Ubidots Inc
 */
 
 #include "UbiBuilder.h"
-#include "UbiTcp.h"
-
-/**************************************************************************
- * Overloaded constructors
- ***************************************************************************/
-
-UbiBuilder::UbiBuilder(/* args */) {}
-
-/**************************************************************************
- * Overloaded destructor
- ***************************************************************************/
-
-UbiBuilder::~UbiBuilder() {}
 
 /***************************************************************************
-FUNCTIONS TO SEND DATA
+STATIC FUNCTIONS
 ***************************************************************************/
+
+UbiBuilder::UbiBuilder(const char* token, const char* host, IotProtocol iot_protocol) {
+  _iot_protocol = iot_protocol;
+  command_list[UBI_TCP] = &builderTcp;
+  // command_list[UBI_HTTP] = &builderHttp;
+  // command_list[UBI_UDP] = &builderUdp;
+  _host = host;
+  _token = token;
+}
+
+UbiProtocol* UbiBuilder::builder() {
+  mapProtocol::iterator i = command_list.find(_iot_protocol);
+  UbiProtocol* ubiBuilder = (i->second)();
+  return ubiBuilder;
+}
+
+UbiProtocol* builderTcp() {
+  UbiProtocol* tcpInstance = new UbiTcp(_host, UBIDOTS_TCP_PORT, USER_AGENT, _token);
+  return tcpInstance;
+}
