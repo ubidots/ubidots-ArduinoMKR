@@ -26,7 +26,7 @@ Developed and maintained by Jose Garcia for IoT Services Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiTcp::UbiTcp(/* args */) {}
+UbiTcp::UbiTcp(const char* host, const int port, const char* user_agent, const char* token) {}
 
 /**************************************************************************
  * Overloaded destructor
@@ -35,5 +35,18 @@ UbiTcp::UbiTcp(/* args */) {}
 UbiTcp::~UbiTcp() {}
 
 /***************************************************************************
-FUNCTIONS TO SEND DATA
+FUNCTIONS TO SEND/RETRIEVE DATA
 ***************************************************************************/
+
+bool UbiTcp::sendData(const char* device_label, const char* device_name, char* payload) {}
+float UbiTcp::get(const char* device_label, const char* variable_label) {}
+
+/***************************************************************************
+Auxiliar functions
+***************************************************************************/
+
+void UbiTcp::setDebug(bool debug) { _debug = debug; }
+bool UbiTcp::serverConnected() {}
+bool UbiTcp::waitServerAnswer() {}
+float UbiTcp::parseTCPAnswer(const char* request_type, char* response) {}
+void UbiTcp::reconnect(const char* host, const int port) {}

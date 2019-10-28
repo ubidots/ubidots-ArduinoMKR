@@ -21,6 +21,7 @@ Developed and maintained by Jose Garcia for Ubidots Inc
 */
 
 #include "UbiBuilder.h"
+#include "UbiTcp.h"
 
 /**************************************************************************
  * Overloaded constructors
