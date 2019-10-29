@@ -25,6 +25,7 @@ Developed and maintained by Jose Garcia for IoT Services Inc
 #define _UbiTcp_H_
 
 #include <WiFiNINA.h>
+#include "UbiConstants.h"
 #include "UbiProtocol.h"
 
 class UbiTcp : public UbiProtocol {
@@ -43,7 +44,6 @@ class UbiTcp : public UbiProtocol {
   int _port;
   bool _debug = false;
   int _timeout = 5000;
-  bool _certifiedLoaded = false;
   bool waitServerAnswer();
   float parseTCPAnswer(const char* request_type, char* response);
   void reconnect(const char* host, const int port);

@@ -23,4 +23,43 @@ Developed and maintained by Jose Garcia for IoT Services Inc
 #ifndef _UbiProtocolHandler_H_
 #define _UbiProtocolHandler_H_
 
+#include "UbiBuilder.h"
+#include "UbiConstants.h"
+#include "UbiProtocol.h"
+#include "UbiTypes.h"
+
+class UbiProtocolHandler {
+ public:
+  explicit UbiProtocolHandler(const char* token, IotProtocol iot_protocol);
+  explicit UbiProtocolHandler(const char* token, UbiServer server = UBI_INDUSTRIAL, IotProtocol iot_protocol = UBI_TCP);
+  void add(const char* variable_label, float value, char* context, unsigned long dot_timestamp_seconds,
+           unsigned int dot_timestamp_millis);
+  bool send();
+  bool send(const char* device_label);
+  bool send(const char* device_label, const char* device_name);
+  float get(const char* device_label, const char* variable_label);
+  void setDebug(bool debug);
+  bool wifiConnect(const char* ssid, const char* password);
+  bool wifiConnected();
+  bool serverConnected();
+  ~UbiProtocolHandler();
+
+ private:
+  char _defaultDeviceLabel[18];
+  UbiProtocol* _ubiProtocol;
+  const char* _token;
+  Value* _dots;
+  int8_t _current_value = 0;
+  bool _dirty = false;
+  bool _debug;
+  IotProtocol _iot_protocol;
+  void buildHttpPayload(char* payload);
+  void buildTcpPayload(char* payload, const char* device_label, const char* device_name);
+  void _builder(const char* token, UbiServer server, IotProtocol iot_protocol);
+  void _floatToChar(char* value_str, float value);
+  int _connectionTimeout = 5000;
+  uint8_t _maxConnectionAttempts = 20;
+  void _getDeviceMac(char macAdrr[]);
+};
+
 #endif

@@ -23,15 +23,42 @@ Developed and maintained by Jose Garcia for IoT Services Inc
 #ifndef _Ubidots_H_
 #define _Ubidots_H_
 
+#include "Arduino.h"
 #include "UbiConstants.h"
 #include "UbiProtocol.h"
+#include "UbiProtocolHandler.h"
 
 class Ubidots {
- private:
-  /* data */
  public:
-  Ubidots(/* args */);
-  ~Ubidots();
+  // explicit Ubidots(const char* token, IotProtocol iotProtocol);
+  // explicit Ubidots(const char* token, UbiServer server = UBI_INDUSTRIAL, IotProtocol iotProtocol = UBI_TCP);
+  // void add(const char* variable_label, float value);
+  // void add(const char* variable_label, float value, char* context);
+  // void add(const char* variable_label, float value, char* context, unsigned long dot_timestamp_seconds);
+  // void add(const char* variable_label, float value, char* context, unsigned long dot_timestamp_seconds,
+  //          unsigned int dot_timestamp_millis);
+  // void addContext(char* key_label, char* key_value);
+  // void getContext(char* context_result);
+  // void getContext(char* context_result, IotProtocol iotProtocol);
+  // bool send();
+  // bool send(const char* device_label);
+  // bool send(const char* device_label, const char* device_name);
+  // float get(const char* device_label, const char* variable_label);
+  // void setDebug(bool debug);
+  // bool wifiConnect(const char* ssid, const char* password);
+  // bool wifiConnected();
+  // bool serverConnected();
+  // ~Ubidots();
+
+ private:
+  // Only non-Xenon devices support cloud communication
+  // UbiProtocolHandler* _cloudProtocol;
+
+  // ContextUbi* _context;
+  // IotProtocol _iotProtocol;
+  // int8_t _current_context = 0;
+  // bool _debug = false;
+  // void _builder(const char* token, UbiServer server, IotProtocol iot_protocol);
 };
 
 #endif

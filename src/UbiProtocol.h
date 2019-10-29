@@ -24,11 +24,16 @@ Developed and maintained by Jose Garcia for IoT Services Inc
 #define _UbiProtocol_H_
 
 #include "UbiTypes.h"
+
+#undef max
+#undef min
+
 class UbiProtocol {
  public:
   virtual bool sendData(const char* device_label, const char* device_name, char* payload) = 0;
   virtual float get(const char* device_label, const char* variable_label) = 0;
   virtual void setDebug(bool debug) = 0;
+  virtual bool serverConnected();
 };
 
 #endif
