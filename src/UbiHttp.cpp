@@ -26,6 +26,8 @@ Inc
 
 #include "UbiUtils.h"
 
+#include <time.h>
+
 /**************************************************************************
  * Overloaded constructors
  ***************************************************************************/
@@ -36,8 +38,6 @@ UbiHTTP::UbiHTTP(const char *host, const int port, const char *user_agent,
   _user_agent = user_agent;
   _token = token;
   _port = port;
-  _syncronizeTime();
-  _certifiedLoaded = _loadCert();
 }
 
 /**************************************************************************
@@ -52,11 +52,6 @@ UbiHTTP::~UbiHTTP() {
 
 bool UbiHTTP::sendData(const char *device_label, const char *device_name,
                        char *payload) {
-  bool allowed = _preConnectionChecks();
-  if (!allowed) {
-    return false;
-  }
-
   /* Connecting the client */
 
   _client_https_ubi.connect(_host, _port);
@@ -65,16 +60,6 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
   if (!_client_https_ubi.connected()) {
     if (_debug) {
       Serial.println(F("[ERROR] Could not connect to the server"));
-    }
-    return false;
-  }
-
-  if (!_client_https_ubi.verifyCertChain(_host)) {
-    if (_debug) {
-      Serial.println(
-          F("[ERROR] Could not verify the remote secure server certificate, "
-            "please make sure that you are using a secure "
-            "network"));
     }
     return false;
   }
@@ -159,11 +144,6 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
 }
 
 double UbiHTTP::get(const char *device_label, const char *variable_label) {
-  bool allowed = _preConnectionChecks();
-  if (!allowed) {
-    return ERROR_VALUE;
-  }
-
   if (_debug) {
     Serial.print(F("Connecting to "));
     Serial.println(_host);
@@ -174,22 +154,6 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
     reconnect(_host, _port);
-    _client_https_ubi.stop();
-    return ERROR_VALUE;
-  }
-
-  // Verify validity of server's certificate
-  if (_client_https_ubi.verifyCertChain(_host)) {
-    if (_debug) {
-      Serial.println(F("Ubidots server certificate verified"));
-    }
-  } else {
-    if (_debug) {
-      Serial.println(
-          F("[ERROR] Could not verify the remote secure server certificate, "
-            "please make sure that you are using a secure "
-            "network"));
-    }
     _client_https_ubi.stop();
     return ERROR_VALUE;
   }
@@ -251,7 +215,11 @@ double UbiHTTP::_parseServerAnswer() {
   uint8_t length = UbiUtils::hexadecimalToDecimal(_charLength);
 
   if (_debug) {
-    Serial.printf_P("Length: %i\n", length);
+
+    char *str;
+    sprintf(str, "Length: %i\n", length);
+    Serial.print(str);
+    free(str);
   }
 
   char *_charValue = (char *)malloc(sizeof(char) * length + 1);
@@ -261,7 +229,10 @@ double UbiHTTP::_parseServerAnswer() {
   double value = strtof(_charValue, NULL);
 
   if (_debug) {
-    Serial.printf_P("Value: %f\n", value);
+    char *str;
+    sprintf(str, "Value: %f\n", value);
+    Serial.print(str);
+    free(str);
   }
 
   free(_charLength);
@@ -388,83 +359,3 @@ void UbiHTTP::setDebug(bool debug) { _debug = debug; }
  */
 
 bool UbiHTTP::serverConnected() { return _client_https_ubi.connected(); }
-
-/*
- * Syncronizes the internal timer to verify if the cert has expired
- */
-
-bool UbiHTTP::_syncronizeTime() {
-  // Synchronizes time using SNTP. This is necessary to verify that
-  // the TLS certificates offered by the server are currently valid.
-  if (_debug) {
-    Serial.print(F("Setting time using SNTP"));
-  }
-  configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
-  time_t now = time(nullptr);
-  uint8_t attempts = 0;
-  while (now < 8 * 3600 * 2 && attempts <= 5) {
-    if (_debug) {
-      Serial.print(".");
-    }
-    now = time(nullptr);
-    attempts += 1;
-    delay(500);
-  }
-
-  if (attempts > 5) {
-    if (_debug) {
-      Serial.println(
-          F("[ERROR] Could not set time using remote SNTP to verify Cert"));
-    }
-    return false;
-  }
-
-  struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
-  if (_debug) {
-    Serial.print(F("Current time: "));
-    Serial.print(asctime(&timeinfo));
-  }
-  return true;
-}
-
-/*
- * Loads the certified from the constants file
- */
-
-bool UbiHTTP::_loadCert() {
-  // Loads root certificate in DER format into WiFiClientSecure object
-  bool res = _client_https_ubi.setCACert_P(UBI_CA_CERT_1, UBI_CA_CERT_LEN_1);
-  res = res && _client_https_ubi.setCACert_P(UBI_CA_CERT_2, UBI_CA_CERT_LEN_2);
-  if (!res && _debug) {
-    Serial.println(F("Failed to load root CA certificate!"));
-  }
-  return res;
-}
-
-bool UbiHTTP::_preConnectionChecks() {
-  /* Synchronizes time every 60 minutes */
-  bool syncronized = true;
-  if (millis() - _timerToSync > 3600000) {
-    syncronized = _syncronizeTime();
-    _timerToSync = millis();
-  }
-
-  if (!syncronized) {
-    if (_debug) {
-      Serial.println(F("[ERROR] Could not syncronize device time with external "
-                       "source, make sure that you are not behind a "
-                       "firewall"));
-    }
-    return false;
-  }
-
-  if (!_certifiedLoaded) {
-    if (_debug) {
-      Serial.println(F("[ERROR] Please load a valid certificate"));
-    }
-    return false;
-  }
-
-  return true;
-}

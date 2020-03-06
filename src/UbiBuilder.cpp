@@ -39,8 +39,7 @@ UbiBuilder::UbiBuilder(const char *host, const char *token,
 }
 
 UbiProtocol *UbiBuilder::builder() {
-  mapProtocol::iterator i = command_list.find(_iot_protocol);
-  UbiProtocol *ubiBuilder = (i->second)();
+  UbiProtocol *ubiBuilder = command_list[_iot_protocol]();
   return ubiBuilder;
 }
 

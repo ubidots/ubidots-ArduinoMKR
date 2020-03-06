@@ -34,8 +34,6 @@ UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent,
   _user_agent = user_agent;
   _token = token;
   _port = port;
-  _syncronizeTime();
-  _certifiedLoaded = _loadCert();
 }
 
 /**************************************************************************
@@ -54,24 +52,6 @@ UbiTCP::~UbiTCP() {
 
 bool UbiTCP::sendData(const char *device_label, const char *device_name,
                       char *payload) {
-  bool allowed = _preConnectionChecks();
-  if (!allowed) {
-    return false;
-  }
-
-  /* Connecting the client */
-  _client_tcps_ubi.connect(_host, UBIDOTS_TCPS_PORT);
-  reconnect(_host, UBIDOTS_TCPS_PORT);
-  if (!_client_tcps_ubi.verifyCertChain(_host)) {
-    if (_debug) {
-      Serial.println(
-          "[ERROR] Could not verify the remote secure server certificate, "
-          "please make sure that you are using a secure "
-          "network");
-    }
-    return false;
-  }
-
   /* Sends data to Ubidots */
   if (_client_tcps_ubi.connected()) {
     _client_tcps_ubi.print(payload);
@@ -107,24 +87,9 @@ bool UbiTCP::sendData(const char *device_label, const char *device_name,
 }
 
 double UbiTCP::get(const char *device_label, const char *variable_label) {
-  bool allowed = _preConnectionChecks();
-  if (!allowed) {
-    return ERROR_VALUE;
-  }
-
   /* Connecting the client */
   _client_tcps_ubi.connect(_host, UBIDOTS_TCPS_PORT);
   reconnect(_host, UBIDOTS_TCPS_PORT);
-
-  if (!_client_tcps_ubi.verifyCertChain(_host)) {
-    if (_debug) {
-      Serial.println(
-          "[ERROR] Could not verify the remote secure server certificate, "
-          "please make sure that you are using a secure "
-          "network");
-    }
-    return ERROR_VALUE;
-  }
 
   if (_client_tcps_ubi.connected()) {
     /* Builds the request POST - Please reference this link to know all the
@@ -284,77 +249,3 @@ void UbiTCP::setDebug(bool debug) { _debug = debug; }
 
 bool UbiTCP::serverConnected() { return _client_tcps_ubi.connected(); }
 
-/*
- * Syncronizes the internal timer to verify if the cert has expired
- */
-
-bool UbiTCP::_syncronizeTime() {
-  // Synchronizes time using SNTP. This is necessary to verify that
-  // the TLS certificates offered by the server are currently valid.
-  if (_debug) {
-    Serial.print("Setting time using SNTP");
-  }
-  configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
-  time_t now = time(nullptr);
-  uint8_t attempts = 0;
-  while (now < 8 * 3600 * 2 && attempts <= 5) {
-    if (_debug) {
-      Serial.print(".");
-    }
-    now = time(nullptr);
-    attempts += 1;
-    delay(500);
-  }
-
-  if (attempts > 5) {
-    if (_debug) {
-      Serial.println(
-          "[ERROR] Could not set time using remote SNTP to verify Cert");
-    }
-    return false;
-  }
-
-  struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
-  if (_debug) {
-    Serial.print("Current time: ");
-    Serial.print(asctime(&timeinfo));
-  }
-  return true;
-}
-
-/*
- * Loads the certified from the constants file
- */
-
-bool UbiTCP::_loadCert() {
-  // Loads root certificate in DER format into WiFiClientSecure object
-  bool res = _client_tcps_ubi.setCACert_P(UBI_CA_CERT_1, UBI_CA_CERT_LEN_1);
-  res = res && _client_tcps_ubi.setCACert_P(UBI_CA_CERT_2, UBI_CA_CERT_LEN_2);
-  if (!res && _debug) {
-    Serial.println("Failed to load root CA certificate!");
-  }
-  return res;
-}
-
-bool UbiTCP::_preConnectionChecks() {
-  /* Synchronizes time every 60 minutes */
-  bool syncronized = true;
-  if (millis() - _timerToSync > 3600000) {
-    syncronized = _syncronizeTime();
-    _timerToSync = millis();
-  }
-
-  if (!syncronized) {
-    return false;
-  }
-
-  if (!_certifiedLoaded) {
-    if (_debug) {
-      Serial.println("Please load a valid certificate");
-    }
-    return false;
-  }
-
-  return true;
-}

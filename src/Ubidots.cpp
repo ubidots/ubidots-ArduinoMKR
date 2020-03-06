@@ -200,7 +200,6 @@ bool Ubidots::wifiConnect(const char *ssid, const char *password) {
     return false;
   }
 
-  WiFi.setAutoReconnect(true);
   Serial.println(F("WiFi connected"));
   Serial.println(F("IP address: "));
   Serial.println(WiFi.localIP());

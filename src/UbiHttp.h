@@ -39,26 +39,24 @@ public:
   ~UbiHTTP();
 
 private:
+  int _timeout = 5000;
+  bool _debug = false;
+  uint8_t _maxReconnectAttempts = 5;
+
   const char *_host;
   const char *_user_agent;
   const char *_token;
   int _port;
-  bool _debug = false;
+
+  WiFiSSLClient _client_https_ubi;
+
   bool waitServerAnswer();
   void reconnect(const char *host, int port);
   void readServerAnswer(char *response);
-  int _timeout = 5000;
-  uint8_t _maxReconnectAttempts = 5;
-  bool _certifiedLoaded = false;
-  bool _syncronizeTime();
-  bool _loadCert();
-  unsigned long _timerToSync = millis();
-  bool _preConnectionChecks();
-  WiFiClientSecure _client_https_ubi;
 
+  double _parseServerAnswer();
   uint16_t _requestLineLength(char *path);
   uint16_t _pathLength(const char *device_label, const char *variable_label);
-  double _parseServerAnswer();
 };
 
 #endif

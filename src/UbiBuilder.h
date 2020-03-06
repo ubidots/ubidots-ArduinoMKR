@@ -27,14 +27,11 @@ Inc
 
 #include "UbiProtocol.h"
 
-#include <map>
-
 UbiProtocol *builderTcp();
 UbiProtocol *builderHttp();
 UbiProtocol *builderUdp();
 
-typedef std::function<UbiProtocol *()> FunctionType;
-typedef std::map<IotProtocol, FunctionType> mapProtocol;
+typedef UbiProtocol *(*builderProtocol)(void);
 
 namespace {
 const char *_host;
@@ -49,7 +46,7 @@ public:
 
 private:
   IotProtocol _iot_protocol;
-  mapProtocol command_list;
+  builderProtocol command_list[SUPPORTED_PROTOCOLS];
 };
 
 #endif
