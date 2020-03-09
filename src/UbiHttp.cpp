@@ -168,9 +168,13 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
   uint16_t requestLineLength = _requestLineLength(path);
   char *message = (char *)malloc(sizeof(char) * requestLineLength + 1);
   sprintf(message,
-          "GET %s HTTP/1.1\r\nHost: %s\r\nX-Auth-Token: "
-          "%s\r\nUser-Agent: %s\r\nContent-Type: "
-          "application/json\r\nConnection: close\r\n\r\n",
+          "GET %s HTTP/1.1\r\n"
+          "Host: %s\r\n"
+          "X-Auth-Token: %s\r\n"
+          "User-Agent: %s\r\n"
+          "Content-Type: application/json\r\n"
+          "Connection: close\r\n"
+          "\r\n",
           path, _host, _token, _user_agent);
 
   if (_debug) {
@@ -247,9 +251,13 @@ double UbiHTTP::_parseServerAnswer() {
  */
 uint16_t UbiHTTP::_requestLineLength(char *path) {
   uint16_t endpointLength =
-      strlen("GET  HTTP/1.1\r\nHost: \r\nX-Auth-Token: "
-             "\r\nUser-Agent: \r\nContent-Type: "
-             "application/json\r\nConnection: close\r\n\r\n") +
+      strlen("GET  HTTP/1.1\r\n"
+             "Host: \r\n"
+             "X-Auth-Token: \r\n"
+             "User-Agent: \r\n"
+             "Content-Type: application/json\r\n"
+             "Connection: close\r\n"
+             "\r\n") +
       strlen(path) + strlen(_host) + strlen(_token) + strlen(_user_agent);
   return endpointLength;
 }
