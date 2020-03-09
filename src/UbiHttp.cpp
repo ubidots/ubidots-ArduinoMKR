@@ -69,59 +69,53 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
      * request's structures https://ubidots.com/docs/api/ */
 
     int content_length = strlen(payload);
+
+    uint16_t pathLength = _pathLength(device_label, "");
+    char *path = (char *)malloc(sizeof(char) * pathLength + 1);
+    memset(path, '\0', pathLength);
+    sprintf(path, "/api/v1.6/devices/%s", device_label);
+    Serial.println(path);
+    uint16_t requestLength =
+        _buildRequestLength(device_label, payload, pathLength);
+
+    Serial.println(F("Making request to Ubidots:\n"));
+
+    char *request = (char *)malloc(sizeof(char) * requestLength + 1);
+    sprintf(request,
+            "POST %s HTTP/1.1\r\n"
+            "Host: %s\r\n"
+            "User-Agent: %s\r\n"
+            "X-Auth-Token: %s\r\n"
+            "Connection: close\r\n"
+            "Content-Type: application/json\r\n"
+            "Content-Length: %i\r\n"
+            "\r\n"
+            "%s"
+            "\r\n",
+            path, _host, _user_agent, _token, content_length, payload);
+
     if (_debug) {
-      Serial.println(F("Making request to Ubidots:\n"));
-      Serial.print(F("POST /api/v1.6/devices/"));
-      Serial.print(device_label);
-      Serial.print(F(" HTTP/1.1\r\n"));
-      Serial.print(F("Host: "));
-      Serial.print(_host);
-      Serial.print(F("\r\n"));
-      Serial.print(F("User-Agent: "));
-      Serial.print(_user_agent);
-      Serial.print(F("\r\n"));
-      Serial.print(F("X-Auth-Token: "));
-      Serial.print(_token);
-      Serial.print(F("\r\n"));
-      Serial.print(F("Connection: close\r\n"));
-      Serial.print(F("Content-Type: application/json\r\n"));
-      Serial.print(F("Content-Length: "));
-      Serial.print(content_length);
-      Serial.print(F("\r\n\r\n"));
-      Serial.print(payload);
-      Serial.print(F("\r\n"));
-
-      Serial.println("waiting for server answer ...");
+      Serial.println(request);
     }
-
-    _client_https_ubi.print(F("POST /api/v1.6/devices/"));
-    _client_https_ubi.print(device_label);
-    _client_https_ubi.print(F(" HTTP/1.1\r\n"));
-    _client_https_ubi.print(F("Host: "));
-    _client_https_ubi.print(_host);
-    _client_https_ubi.print(F("\r\n"));
-    _client_https_ubi.print(F("User-Agent: "));
-    _client_https_ubi.print(_user_agent);
-    _client_https_ubi.print(F("\r\n"));
-    _client_https_ubi.print(F("X-Auth-Token: "));
-    _client_https_ubi.print(_token);
-    _client_https_ubi.print(F("\r\n"));
-    _client_https_ubi.print(F("Connection: close\r\n"));
-    _client_https_ubi.print(F("Content-Type: application/json\r\n"));
-    _client_https_ubi.print(F("Content-Length: "));
-    _client_https_ubi.print(content_length);
-    _client_https_ubi.print(F("\r\n\r\n"));
-    _client_https_ubi.print(payload);
-    _client_https_ubi.print(F("\r\n"));
+    _client_https_ubi.print(request);
     _client_https_ubi.flush();
+
+    free(path);
+    free(request);
 
     /* Reads the response from the server */
     if (waitServerAnswer()) {
       if (_debug) {
         Serial.println(F("\nUbidots' Server response:\n"));
-        while (_client_https_ubi.available()) {
-          char c = _client_https_ubi.read();
-          Serial.print(c);
+
+        const char *serverReponse = _client_https_ubi.readString().c_str();
+        if (strstr(serverReponse, "400 Bad Request") != NULL ||
+            strstr(serverReponse, "Internal Server Error") != NULL) {
+          Serial.println(F("[Error] There has been an error in the request"));
+          _client_https_ubi.flush();
+          _client_https_ubi.stop();
+        } else {
+          Serial.println(serverReponse);
         }
       }
 
@@ -139,6 +133,34 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
 
   _client_https_ubi.stop();
   return result;
+}
+
+/**
+ * @brief Calculate the lenght of the request line to be send over HTTP to the
+ * server
+ *
+ * @param device_label label set by the user
+ * @param payload  request built by the Library
+ * @param pathLength Lengh of the request line
+ * @return uint16_t Total length of the request
+ */
+uint16_t UbiHTTP::_buildRequestLength(const char *device_label,
+                                      const char *payload,
+                                      uint16_t pathLength) {
+  uint16_t endpointLength =
+      strlen("POST  HTTP/1.1\r\n"
+             "Host: \r\n"
+             "User-Agent: \r\n"
+             "X-Auth-Token: \r\n"
+             "Connection: close\r\n"
+             "Content-Type: application/json\r\n"
+             "Content-Length: \r\n"
+             "\r\n"
+             "\r\n") +
+      pathLength + strlen(device_label) + strlen(_host) + strlen(_user_agent) +
+      strlen(_token) + UbiUtils::countDigit(strlen(payload)) + strlen(payload);
+
+  return endpointLength;
 }
 
 double UbiHTTP::get(const char *device_label, const char *variable_label) {
@@ -250,15 +272,15 @@ double UbiHTTP::_parseServerAnswer() {
  * @return uint16_t  Lenght of the request line
  */
 uint16_t UbiHTTP::_requestLineLength(char *path) {
-  uint16_t endpointLength =
-      strlen("GET  HTTP/1.1\r\n"
-             "Host: \r\n"
-             "X-Auth-Token: \r\n"
-             "User-Agent: \r\n"
-             "Content-Type: application/json\r\n"
-             "Connection: close\r\n"
-             "\r\n") +
-      strlen(path) + strlen(_host) + strlen(_token) + strlen(_user_agent);
+  uint16_t endpointLength = strlen("GET  HTTP/1.1\r\n"
+                                   "Host: \r\n"
+                                   "X-Auth-Token: \r\n"
+                                   "User-Agent: \r\n"
+                                   "Content-Type: application/json\r\n"
+                                   "Connection: close\r\n"
+                                   "\r\n") +
+                            strlen(path) + strlen(_host) + strlen(_token) +
+                            strlen(_user_agent);
   return endpointLength;
 }
 

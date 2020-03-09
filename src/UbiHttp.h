@@ -57,6 +57,8 @@ private:
   double _parseServerAnswer();
   uint16_t _requestLineLength(char *path);
   uint16_t _pathLength(const char *device_label, const char *variable_label);
+  uint16_t _buildRequestLength(const char *device_label, const char *payload,
+                               uint16_t path);
 };
 
 #endif
