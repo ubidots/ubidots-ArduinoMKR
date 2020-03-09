@@ -26,8 +26,6 @@ Inc
 
 #include "UbiUtils.h"
 
-#include <time.h>
-
 /**************************************************************************
  * Overloaded constructors
  ***************************************************************************/
@@ -149,13 +147,13 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
     Serial.println(_host);
   }
 
-  if (!_client_https_ubi.connect(_host, _port)) {
+  if (!_client_https_ubi.connectSSL(_host, _port)) {
     if (_debug) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
-    reconnect(_host, _port);
-    _client_https_ubi.stop();
-    return ERROR_VALUE;
+    if (!reconnect(_host, _port)) {
+      return ERROR_VALUE;
+    }
   }
 
   uint16_t pathLength = _pathLength(device_label, variable_label);
@@ -195,7 +193,11 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
   free(message);
   free(path);
 
-  return _parseServerAnswer();
+  double value = _parseServerAnswer();
+  _client_https_ubi.flush();
+  _client_https_ubi.stop();
+  // return 0;
+  return value;
 }
 
 double UbiHTTP::_parseServerAnswer() {
@@ -215,11 +217,8 @@ double UbiHTTP::_parseServerAnswer() {
   uint8_t length = UbiUtils::hexadecimalToDecimal(_charLength);
 
   if (_debug) {
-
-    char *str;
-    sprintf(str, "Length: %i\n", length);
-    Serial.print(str);
-    free(str);
+    Serial.print(F("Length: "));
+    Serial.println(length);
   }
 
   char *_charValue = (char *)malloc(sizeof(char) * length + 1);
@@ -229,10 +228,8 @@ double UbiHTTP::_parseServerAnswer() {
   double value = strtof(_charValue, NULL);
 
   if (_debug) {
-    char *str;
-    sprintf(str, "Value: %f\n", value);
-    Serial.print(str);
-    free(str);
+    Serial.print("Value: ");
+    Serial.println(value);
   }
 
   free(_charLength);
@@ -277,7 +274,7 @@ uint16_t UbiHTTP::_pathLength(const char *device_label,
  *         false if timeout is reached.
  */
 
-void UbiHTTP::reconnect(const char *host, const int port) {
+bool UbiHTTP::reconnect(const char *host, const int port) {
   uint8_t attempts = 0;
   while (!_client_https_ubi.connected() && attempts < _maxReconnectAttempts) {
     if (_debug) {
@@ -286,13 +283,23 @@ void UbiHTTP::reconnect(const char *host, const int port) {
       Serial.print(F(" , attempt number: "));
       Serial.println(attempts);
     }
-    _client_https_ubi.connect(host, port);
+    _client_https_ubi.connectSSL(host, port);
     if (_debug) {
       Serial.println(F("Attempt finished"));
     }
-    attempts += 1;
+    attempts++;
     delay(1000);
+
+    if (_client_https_ubi.connected()) {
+      return true;
+    }
+    if (attempts == _maxReconnectAttempts) {
+      _client_https_ubi.flush();
+      _client_https_ubi.stop();
+    }
   }
+
+  return false;
 }
 
 /**
@@ -300,11 +307,13 @@ void UbiHTTP::reconnect(const char *host, const int port) {
  */
 
 void UbiHTTP::readServerAnswer(char *_serverResponse) {
-
-  sprintf(_serverResponse, "%c", _client_https_ubi.read());
-
+  bool _firstChar = true;
   while (_client_https_ubi.available()) {
-    char *c = (char *)malloc(sizeof(char) * 3);
+    if (_firstChar) {
+      _firstChar = false;
+      sprintf(_serverResponse, "%c", _client_https_ubi.read());
+    }
+    char *c = (char *)malloc(sizeof(char) * 2);
     sprintf(c, "%c", _client_https_ubi.read());
     if (*c == '\r') {
       // Get the last character \n to enable the function to run again
@@ -313,14 +322,21 @@ void UbiHTTP::readServerAnswer(char *_serverResponse) {
       break;
     } else if (*c == 'e') {
       /**
-       * After 18 digits it will show the response in scientific notation, and
-       * there is no space to store such a  huge number
+       * After 18 digits it will show the response in scientific notation,and
+       * the arquitechture does not have space store such a huge number
        * */
       sprintf(_serverResponse, "%f", ERROR_VALUE);
       if (_debug) {
         Serial.println(
             F("[ERROR]The value from the server exceeded memory capacity"));
       }
+      break;
+    } else if (*c == '<') {
+      sprintf(_serverResponse, "%f", ERROR_VALUE);
+      if (_debug) {
+        Serial.println(F("[ERROR] Internal Server Error"));
+      }
+      break;
     } else {
       strcat(_serverResponse, c);
     }

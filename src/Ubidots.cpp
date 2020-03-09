@@ -183,13 +183,18 @@ void Ubidots::getContext(char *context_result, IotProtocol iotProtocol) {
 }
 
 bool Ubidots::wifiConnect(const char *ssid, const char *password) {
-  WiFi.begin(ssid, password);
   uint8_t maxConnectionAttempts = 0;
+  WiFi.begin(ssid, password);
+  const char *fv = (const char *)malloc(sizeof(strlen(WiFi.firmwareVersion())));
+  if (strcmp(fv, WiFi.firmwareVersion()) == 0) {
+    Serial.println("Please upgrade the firmware");
+    return false;
+  }
   while (WiFi.status() != WL_CONNECTED &&
          maxConnectionAttempts < _maxConnectionAttempts) {
     delay(500);
     Serial.print(".");
-    maxConnectionAttempts += 1;
+    maxConnectionAttempts++;
   }
   if (WiFi.status() == WL_NO_SSID_AVAIL) {
     Serial.println("Your network SSID cannot be reached");
@@ -205,7 +210,7 @@ bool Ubidots::wifiConnect(const char *ssid, const char *password) {
   Serial.println(WiFi.localIP());
   return true;
 }
-bool Ubidots::wifiConnected() { return WiFi.status() != WL_CONNECTED; }
+bool Ubidots::wifiConnected() { return WiFi.status() == WL_CONNECTED; }
 bool Ubidots::serverConnected() { return _cloudProtocol->serverConnected(); }
 
 /* Obtains the device's MAC */

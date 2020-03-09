@@ -25,7 +25,6 @@ Inc
 #ifndef _UbiProtocol_H_
 #define _UbiProtocol_H_
 
-#include <SPI.h>
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
