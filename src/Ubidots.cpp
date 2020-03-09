@@ -189,11 +189,7 @@ bool Ubidots::wifiConnect(const char *ssid, const char *password) {
   }
 
   WiFi.begin(ssid, password);
-  const char *fv = (const char *)malloc(sizeof(strlen(WiFi.firmwareVersion())));
-  if (strcmp(fv, WiFi.firmwareVersion()) == 0) {
-    Serial.println("Please upgrade the firmware");
-    return false;
-  }
+
   while (WiFi.status() != WL_CONNECTED &&
          maxConnectionAttempts < _maxConnectionAttempts) {
     delay(500);
