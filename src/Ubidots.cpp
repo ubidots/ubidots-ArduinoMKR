@@ -184,6 +184,10 @@ void Ubidots::getContext(char *context_result, IotProtocol iotProtocol) {
 
 bool Ubidots::wifiConnect(const char *ssid, const char *password) {
   uint8_t maxConnectionAttempts = 0;
+  if (_debug) {
+    Serial.println(F("Connecting to WiFi"));
+  }
+
   WiFi.begin(ssid, password);
   const char *fv = (const char *)malloc(sizeof(strlen(WiFi.firmwareVersion())));
   if (strcmp(fv, WiFi.firmwareVersion()) == 0) {
