@@ -40,13 +40,6 @@ public:
   ~UbiTCP();
 
 private:
-  int _timeout = 5000;
-  bool _debug = false;
-
-  const char *_host;
-  const char *_user_agent;
-  const char *_token;
-  int _port;
 
   WiFiSSLClient _client_tcps_ubi;
   

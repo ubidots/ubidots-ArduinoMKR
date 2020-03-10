@@ -42,16 +42,12 @@ public:
   ~UbiUDP();
 
 private:
-  const char *_host;
-  const char *_user_agent;
-  const char *_token;
-  int _port;
-  bool _debug = false;
-  int _timeout = 5000;
+
+  WiFiUDP _client_udp_ubi;
+  
   bool waitServerAnswer();
   bool parseTCPAnswer(char *response);
   void reconnect(const char *host, const int port);
-  WiFiUDP _client_udp_ubi;
 };
 
 #endif

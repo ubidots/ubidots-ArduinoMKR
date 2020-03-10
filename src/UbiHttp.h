@@ -39,14 +39,6 @@ public:
   ~UbiHTTP();
 
 private:
-  int _timeout = 5000;
-  bool _debug = false;
-  uint8_t _maxReconnectAttempts = 5;
-
-  const char *_host;
-  const char *_user_agent;
-  const char *_token;
-  int _port;
 
   WiFiSSLClient _client_https_ubi;
 

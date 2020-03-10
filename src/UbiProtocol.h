@@ -31,7 +31,25 @@ Inc
 #include "UbiConstants.h"
 
 class UbiProtocol {
+protected:
+  int _timeout;
+  bool _debug;
+  uint8_t _maxReconnectAttempts;
+
+  const char *_host;
+  const char *_user_agent;
+  const char *_token;
+  int _port;
+
 public:
+  explicit UbiProtocol(const char *host, const char *user_agent,
+                       const char *token, int port)
+      : _host(host), _user_agent(user_agent), _token(token), _port(port) {
+    _timeout = 5000;
+    _debug = false;
+    _maxReconnectAttempts = 5;
+  }
+  
   virtual bool sendData(const char *device_label, const char *device_name,
                         char *payload) = 0;
   virtual double get(const char *device_label, const char *variable_label) = 0;

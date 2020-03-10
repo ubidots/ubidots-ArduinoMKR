@@ -29,12 +29,8 @@ Inc
  ***************************************************************************/
 
 UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent,
-               const char *token) {
-  _host = host;
-  _user_agent = user_agent;
-  _token = token;
-  _port = port;
-}
+               const char *token)
+    : UbiProtocol(host, user_agent, token, port) {}
 
 /**************************************************************************
  * Destructor
@@ -248,4 +244,3 @@ void UbiTCP::setDebug(bool debug) { _debug = debug; }
  */
 
 bool UbiTCP::serverConnected() { return _client_tcps_ubi.connected(); }
-
