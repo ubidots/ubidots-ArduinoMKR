@@ -55,6 +55,11 @@ public:
   virtual double get(const char *device_label, const char *variable_label) = 0;
   virtual void setDebug(bool debug) = 0;
   virtual bool serverConnected();
+  /**
+   * Makes available debug traces
+   */
+
+  inline void setDebug(bool debug) { _debug = debug; }
 };
 
 #endif

@@ -390,12 +390,6 @@ bool UbiHTTP::waitServerAnswer() {
   return true;
 }
 
-/**
- * Makes available debug traces
- */
-
-void UbiHTTP::setDebug(bool debug) { _debug = debug; }
-
 /*
  * Checks if the socket is still opened with the Ubidots Server
  */
