@@ -49,12 +49,46 @@ public:
     _debug = false;
     _maxReconnectAttempts = 5;
   }
-  
+
   virtual bool sendData(const char *device_label, const char *device_name,
                         char *payload) = 0;
   virtual double get(const char *device_label, const char *variable_label) = 0;
-  virtual void setDebug(bool debug) = 0;
   virtual bool serverConnected();
+
+  /**
+   * Reconnects to the server
+   * @return true once the host answer buffer length is greater than zero,
+   *         false if timeout is reached.
+   */
+  template <class Client>
+  bool reconnect(Client *client, const char *host, const int port) {
+    uint8_t attempts = 0;
+    while (!client->connected() && attempts < _maxReconnectAttempts) {
+      if (_debug) {
+        Serial.print(F("Trying to connect to "));
+        Serial.print(host);
+        Serial.print(F(" , attempt number: "));
+        Serial.println(attempts);
+      }
+      client->connectSSL(host, port);
+      if (_debug) {
+        Serial.println(F("Attempt finished"));
+      }
+      attempts++;
+      delay(1000);
+
+      if (client->connected()) {
+        return true;
+      }
+      if (attempts == _maxReconnectAttempts) {
+        client->flush();
+        client->stop();
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Makes available debug traces
    */

@@ -42,7 +42,6 @@ private:
   WiFiSSLClient _client_https_ubi;
 
   bool waitServerAnswer();
-  bool reconnect(const char *host, int port);
   void readServerAnswer(char *response);
 
   double _parseServerAnswer();

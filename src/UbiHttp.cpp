@@ -49,7 +49,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
   /* Connecting the client */
 
   _client_https_ubi.connect(_host, _port);
-  reconnect(_host, _port);
+  reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port);
 
   if (!_client_https_ubi.connected()) {
     if (_debug) {
@@ -169,7 +169,7 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
     if (_debug) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
-    if (!reconnect(_host, _port)) {
+    if (!reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port)) {
       return ERROR_VALUE;
     }
   }
@@ -292,40 +292,6 @@ uint16_t UbiHTTP::_pathLength(const char *device_label,
   uint16_t endpointLength = strlen("/api/v1.6/devices///lv") +
                             strlen(device_label) + strlen(variable_label);
   return endpointLength;
-}
-
-/**
- * Reconnects to the server
- * @return true once the host answer buffer length is greater than zero,
- *         false if timeout is reached.
- */
-
-bool UbiHTTP::reconnect(const char *host, const int port) {
-  uint8_t attempts = 0;
-  while (!_client_https_ubi.connected() && attempts < _maxReconnectAttempts) {
-    if (_debug) {
-      Serial.print(F("Trying to connect to "));
-      Serial.print(host);
-      Serial.print(F(" , attempt number: "));
-      Serial.println(attempts);
-    }
-    _client_https_ubi.connectSSL(host, port);
-    if (_debug) {
-      Serial.println(F("Attempt finished"));
-    }
-    attempts++;
-    delay(1000);
-
-    if (_client_https_ubi.connected()) {
-      return true;
-    }
-    if (attempts == _maxReconnectAttempts) {
-      _client_https_ubi.flush();
-      _client_https_ubi.stop();
-    }
-  }
-
-  return false;
 }
 
 /**
