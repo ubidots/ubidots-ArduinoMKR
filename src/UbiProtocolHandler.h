@@ -40,22 +40,23 @@ public:
   double get(const char *device_label, const char *variable_label);
   void setDebug(bool debug);
   bool serverConnected();
-  ~UbiProtocolHandler();
+  virtual ~UbiProtocolHandler();
 
 private:
-  UbiProtocol *_ubiProtocol;
-  const char *_token;
-  Value *_dots;
   int8_t _current_value = 0;
+  int _connectionTimeout = 5000;
   bool _dirty = false;
-  bool _debug;
+
+  UbiProtocol *_ubiProtocol;
   IotProtocol _iot_protocol;
+  Value *_dots;
+  const char *_token;
+  bool _debug;
+
   void buildHttpPayload(char *payload);
   void buildTcpPayload(char *payload, const char *device_label,
                        const char *device_name);
   void _builder(const char *token, UbiServer server, IotProtocol iot_protocol);
-  void _floatToChar(char *value_str, float value);
-  int _connectionTimeout = 5000;
   void _getDeviceMac(char macAdrr[]);
 };
 
