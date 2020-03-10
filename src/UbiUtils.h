@@ -48,6 +48,30 @@ public:
     }
     return count;
   }
+
+  /*
+   * Stores the float type value into the char array input
+   * @str_value [Mandatory] char payload pointer to store the value.
+   * @value [Mandatory] Float value to convert
+   */
+
+  static void floatToChar(char *str_value, float value) {
+    char temp_arr[20];
+    sprintf(temp_arr, "%17g", value);
+    uint8_t j = 0;
+    uint8_t k = 0;
+    while (j < 20) {
+      if (temp_arr[j] != ' ') {
+        str_value[k] = temp_arr[j];
+        k++;
+      }
+      if (temp_arr[j] == '\0') {
+        str_value[k] = temp_arr[j];
+        break;
+      }
+      j++;
+    }
+  }
 };
 
 #endif
