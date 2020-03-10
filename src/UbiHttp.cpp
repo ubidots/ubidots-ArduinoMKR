@@ -48,8 +48,19 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
                        char *payload) {
   /* Connecting the client */
 
-  _client_https_ubi.connect(_host, _port);
-  reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port);
+  if (_debug) {
+    Serial.print(F("Connecting to "));
+    Serial.println(_host);
+  }
+
+  if (!_client_https_ubi.connectSSL(_host, _port)) {
+    if (_debug) {
+      Serial.println(F("Connection Failed to Ubidots - Try Again"));
+    }
+    if (!reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port)) {
+      return ERROR_VALUE;
+    }
+  }
 
   if (!_client_https_ubi.connected()) {
     if (_debug) {
