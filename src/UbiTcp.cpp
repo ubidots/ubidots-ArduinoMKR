@@ -65,7 +65,7 @@ bool UbiTCP::sendData(const char *device_label, const char *device_name,
   }
 
   if (_debug) {
-    Serial.println(F("Paylaod"));
+    Serial.println(F("Payload"));
     Serial.println(payload);
   }
 
