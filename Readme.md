@@ -1,48 +1,33 @@
 
-# ESP8266-1 stand-alone
+# Arduino MKR1010
 
-The ESP8266 is a microcontroller developed by [Espressif Systems](http://espressif.com/). Known as a WiFi Module, this microcontroller has the ability to perform WiFi related activities like Internet of things applications and home automation. Ranging in price and features, there are many types of ESP8266 modules available, but all of them are incredibly useful for IoT world.
+The Arduino MKR WiFi 1010 is the easiest point of entry to basic IoT and pico-network application design. Whether you are looking at building a sensor network connected to your office or home router, or if you want to create a BLE device sending data to a cellphone, the MKR WiFi 1010 is your one-stop-solution for many of the basic IoT application scenarios.
 
 ## Requiremets
 
-* [An ESP8266 module](https://www.sparkfun.com/products/13678).
-* [An Arduino UNO](https://www.arduino.cc/en/Main/ArduinoBoardUno), [UartSBee](http://www.seeedstudio.com/wiki/UartSBee_V4) or any Uart to USB device.
+* [An MKR1010 module](https://store.arduino.cc/usa/mkr-wifi-1010).
 * [Arduino IDE 1.6.5 or higher](https://www.arduino.cc/en/Main/Software)
-* [Ubidots library](https://github.com/ubidots/ubidots-esp8266/archive/master.zip) 
+* [Ubidots library](https://github.com/ubidots/ubidots-ArduinoMKR/archive/master.zip) 
 * Jumper wires.
 
-**NOTE:** This library is also compatible with the **NodeMcu v1.0**, please refer to our [help center](https://help.ubidots.com/en/?q=esp8266) to find guides and examples codes.   
+**NOTE:** This library is also compatible with the **Nano 33**, please refer to our [help center](https://help.ubidots.com/en/?q=nano33) to find guides and examples codes.   
   
-## Wires
 
-1. identify the pinout of ESP8266.
-
-![ESP8266 connection](https://raw.githubusercontent.com/guyz/pyesp8266/master/esp8266_pinout.png)
-
-ESP8266 | UARTbee | Arduino UNO
---------|---------|------------ 
-RXD | TXD | RX
-GPIO0 | GND | GND
-GPIO2 | — | —
-GND | GND | GND
-VCC | 3.3V | 3.3V
-RST | — | —
-CH_PD | 3.3V | 3.3V
-TXD | RXD | TX
-
-**Note:** If you are using an Arduino UNO you will need to set Arduino RST to GND. Please be careful with the VCC of the ESP8266, it works only with a 3.3V supply.
 
 ## Setup
 
 1. Download the [Arduino IDE](https://www.arduino.cc/en/Main/Software).
 2. Open you IDE and click on **File -> Preferences**.
-3. In aditional **Boards Manager URLs** add this line and click the “OK” button: *“http://arduino.esp8266.com/stable/package_esp8266com_index.json”*
-4. Open the Boards Manager from **Tools -> Board menu** and install esp8266 platform.
-5. Select the ESP8266 board from **Tools > Board > Generic ESP8266 Module**.
-6. Download the **Ubidots library** [here](https://github.com/ubidots/ubidots-nodemcu/archive/master.zip).
-7. Now, click on **Sketch -> Include Library -> Add .ZIP Library**.
-8. Select the .ZIP file of Ubidots and then "**Accept**" or "**Choose**".
-9. Close the Arduino IDE and open it again.
+3. Open the Boards Manager from **Tools -> Board** menu and search for "mkr" and install Arduino SAMD Boards (32-bits ARM Cortex-M0+).
+4. Select the MKR1010 board from **Tools > Board > Arduino MKR WiFI 1010**.
+5. Download the **Ubidots library** [here](https://github.com/ubidots/ubidots-ArduinoMKR/archive/master.zip).
+6. Now, click on **Sketch -> Include Library -> Add .ZIP Library**.
+7. Select the .ZIP file of Ubidots and then "**Accept**" or "**Choose**".
+8. Close the Arduino IDE and open it again.
+
+**NOTE:** To be able to use this device with TCP over TLS1.2 you must add manually the certificate from Ubidots to the module following the section **Certificate uploading** from this [guide](https://www.arduino.cc/en/Tutorial/FirmwareUpdater), and add the next line required for the process in the *Add Domain* button.
+
+`industrial.api.ubidots.com:9812`
 
 
 # Documentation
@@ -121,7 +106,9 @@ bool send(const char* device_label, const char* device_name);
 ```
 
 > @device_label, [Optional], [Default] = Device's MAC Address. The device label to send data. If not set, the device's MAC address will be used.  
-> @device_name, [Optional], [Default] = @device_label. The device name otherwise assigned if the device doesn't already exist in your Ubidots account. If not set, the device label parameter will be used. **NOTE**: Device name is only supported through TCP/UDP, if you use another protocol, the device name will be the same as device label.  
+> @device_name, [Optional], [Default] = @device_label. The device name otherwise assigned if the device doesn't already exist in your Ubidots account. If not set, the device label parameter will be used. 
+> 
+> **NOTE**: Device name is only supported through TCP/UDP, if you use another protocol, the device name will be the same as device label.  
 
 Sends all the data added using the add() method. Returns true if the data was sent.
 
@@ -149,8 +136,8 @@ Returns true if the device has a socket opened with Ubidots.
 void setDeviceType(const char* deviceType)
 ```
 
-Sets a ![device type](https://help.ubidots.com/en/articles/2129204-device-types) to be added in your request. This method works only if you set HTTP as iot protocol in your instance constructor.
+Sets a [device type](https://help.ubidots.com/en/articles/2129204-device-types) to be added in your request. This method works only if you set HTTP as iot protocol in your instance constructor.
 
 # Examples
 
-Refer to the ![examples](https://github.com/ubidots/ubidots-esp8266/tree/master/examples) folder
+Refer to the [examples](https://github.com/ubidots/ubidots-ArduinoMKR/tree/master/examples) folder
