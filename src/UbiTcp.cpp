@@ -49,14 +49,22 @@ UbiTCP::~UbiTCP() {
 bool UbiTCP::sendData(const char *device_label, const char *device_name,
                       char *payload) {
   /* Sends data to Ubidots */
-  if (_client_tcps_ubi.connected()) {
-    _client_tcps_ubi.print(payload);
-  } else {
+  if (_debug) {
+    Serial.print(F("Connecting to "));
+    Serial.println(_host);
+  }
+
+  /**
+   * If you change to SSL connection you must change the secureConnection flag
+   * into reconnect method
+   */
+  if (!_client_tcps_ubi.connectSSL(_host, _port)) {
     if (_debug) {
-      Serial.println("[ERROR] Could not connect to the host");
+      Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
-    _client_tcps_ubi.stop();
-    return false;
+    if (!reconnect<WiFiSSLClient>(&_client_tcps_ubi)) {
+      return ERROR_VALUE;
+    }
   }
 
   /* Waits for the host's answer */
@@ -64,102 +72,89 @@ bool UbiTCP::sendData(const char *device_label, const char *device_name,
     if (_debug) {
       Serial.println("[ERROR] Could not read server's response");
     }
+    _client_tcps_ubi.flush();
     _client_tcps_ubi.stop();
     return false;
   }
 
-  /* Parses the host answer, returns true if it is 'Ok' */
-  char *response = (char *)malloc(sizeof(char) * 100);
-
-  float value = parseTCPAnswer("POST", response);
-  free(response);
+  float value = parseTCPAnswer("POST");
   if (value != ERROR_VALUE) {
+    _client_tcps_ubi.flush();
     _client_tcps_ubi.stop();
     return true;
   }
-
+  _client_tcps_ubi.flush();
   _client_tcps_ubi.stop();
   return false;
 }
 
 double UbiTCP::get(const char *device_label, const char *variable_label) {
+
   /* Connecting the client */
-  _client_tcps_ubi.connect(_host, UBIDOTS_TCPS_PORT);
-  reconnect(_host, UBIDOTS_TCPS_PORT);
-
-  if (_client_tcps_ubi.connected()) {
-    /* Builds the request POST - Please reference this link to know all the
-     * request's structures https://ubidots.com/docs/api/ */
-    _client_tcps_ubi.print(_user_agent);
-    _client_tcps_ubi.print("|LV|");
-    _client_tcps_ubi.print(_token);
-    _client_tcps_ubi.print("|");
-    _client_tcps_ubi.print(device_label);
-    _client_tcps_ubi.print(":");
-    _client_tcps_ubi.print(variable_label);
-    _client_tcps_ubi.print("|end");
-
-    if (_debug) {
-      Serial.println("----");
-      Serial.println("Payload for request:");
-      Serial.print(_user_agent);
-      Serial.print("|LV|");
-      Serial.print(_token);
-      Serial.print("|");
-      Serial.print(device_label);
-      Serial.print(":");
-      Serial.print(variable_label);
-      Serial.print("|end");
-      Serial.println("\n----");
-    }
-
-    /* Waits for the host's answer */
-    if (!waitServerAnswer()) {
-      _client_tcps_ubi.stop();
-      return ERROR_VALUE;
-    }
-
-    /* Reads the response from the server */
-    char *response = (char *)malloc(sizeof(char) * MAX_BUFFER_SIZE);
-    float value = parseTCPAnswer("LV", response);
-    _client_tcps_ubi.stop();
-    free(response);
-    return value;
-  }
 
   if (_debug) {
-    Serial.println("ERROR could not connect to the server");
+    Serial.print(F("Connecting to "));
+    Serial.print(_host);
+    Serial.print(F(" on Port: "));
+    Serial.println(_port);
   }
 
+  if (!_client_tcps_ubi.connectSSL(_host, _port)) {
+    if (_debug) {
+      Serial.println(F("Connection Failed to Ubidots - Try Again"));
+    }
+    if (!reconnect<WiFiSSLClient>(&_client_tcps_ubi)) {
+      return ERROR_VALUE;
+    }
+  }
+
+  if (!_client_tcps_ubi.connected()) {
+    if (_debug) {
+      Serial.println(F("[ERROR] Could not connect to the server"));
+    }
+    return ERROR_VALUE;
+  }
+
+  /* Builds the request POST - Please reference this link to know all the
+   * request's structures https://ubidots.com/docs/api/ */
+  _client_tcps_ubi.print(_user_agent);
+  _client_tcps_ubi.print("|LV|");
+  _client_tcps_ubi.print(_token);
+  _client_tcps_ubi.print("|");
+  _client_tcps_ubi.print(device_label);
+  _client_tcps_ubi.print(":");
+  _client_tcps_ubi.print(variable_label);
+  _client_tcps_ubi.print("|end");
+
+  if (_debug) {
+    Serial.println("----");
+    Serial.println("Payload for request:");
+    Serial.print(_user_agent);
+    Serial.print("|LV|");
+    Serial.print(_token);
+    Serial.print("|");
+    Serial.print(device_label);
+    Serial.print(":");
+    Serial.print(variable_label);
+    Serial.print("|end");
+    Serial.println("\n----");
+  }
+
+  /* Waits for the host's answer */
+  if (!waitServerAnswer()) {
+    return ERROR_VALUE;
+  }
+
+  float value = parseTCPAnswer("LV");
+  _client_tcps_ubi.flush();
   _client_tcps_ubi.stop();
-  return ERROR_VALUE;
+  return value;
+  // return 0;
 }
 
 /**************************************************************************
  * Auxiliar
  ***************************************************************************/
-
-/**
- * Reconnects to the server
- * @return true once the host answer buffer length is greater than zero,
- *         false if timeout is reached.
- */
-
-void UbiTCP::reconnect(const char *host, const int port) {
-  uint8_t attempts = 0;
-  while (!_client_tcps_ubi.status() && attempts < 5) {
-    if (_debug) {
-      Serial.print("Trying to connect to ");
-      Serial.print(host);
-      Serial.print(" , attempt number: ");
-      Serial.println(attempts);
-    }
-    _client_tcps_ubi.stop();
-    _client_tcps_ubi.connect(host, port);
-    attempts += 1;
-    delay(1000);
-  }
-}
 
 /**
  * Function to wait for the host answer up to the already set _timeout.
@@ -176,6 +171,8 @@ bool UbiTCP::waitServerAnswer() {
       if (_debug) {
         Serial.println("timeout, could not read any response from the host");
       }
+      _client_tcps_ubi.flush();
+      _client_tcps_ubi.stop();
       return false;
     }
   }
@@ -188,36 +185,26 @@ bool UbiTCP::waitServerAnswer() {
  * @return true if there is an 'Ok' in the answer, false if not.
  */
 
-float UbiTCP::parseTCPAnswer(const char *request_type, char *response) {
-  int j = 0;
+float UbiTCP::parseTCPAnswer(const char *request_type) {
 
   if (_debug) {
     Serial.println("----------");
     Serial.println("Server's response:");
   }
+  char *readFromServer = (char *)malloc(sizeof(char) * 100);
 
-  while (_client_tcps_ubi.available()) {
-    char c = _client_tcps_ubi.read();
-    if (_debug) {
-      Serial.write(c);
-    }
-    response[j] = c;
-    j++;
-    if (j >= MAX_BUFFER_SIZE - 1) {
-      break;
-    }
-  }
+  readFromServer = strdup(_client_tcps_ubi.readString().c_str());
 
   if (_debug) {
-    Serial.println("\n----------");
+    Serial.println(readFromServer);
+    Serial.println("----------");
   }
 
-  response[j] = '\0';
   float result = ERROR_VALUE;
 
   // POST
-  if (request_type == "POST") {
-    char *pch = strstr(response, "OK");
+  if (strcmp(request_type, "POST") == 0) {
+    char *pch = strstr(readFromServer, "OK");
     if (pch != NULL) {
       result = 1;
     }
@@ -225,19 +212,15 @@ float UbiTCP::parseTCPAnswer(const char *request_type, char *response) {
   }
 
   // LV
-  char *pch = strchr(response, '|');
+  char *pch = strchr(readFromServer, '|');
   if (pch != NULL) {
     result = atof(pch + 1);
   }
 
+  free(readFromServer);
+
   return result;
 }
-
-/**
- * Makes available debug traces
- */
-
-void UbiTCP::setDebug(bool debug) { _debug = debug; }
 
 /*
  * Checks if the socket is still opened with the Ubidots Server

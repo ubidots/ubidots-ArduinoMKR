@@ -60,17 +60,17 @@ public:
    * @return true once the host answer buffer length is greater than zero,
    *         false if timeout is reached.
    */
-  template <class Client>
-  bool reconnect(Client *client, const char *host, const int port) {
+  template <class Client> bool reconnect(Client *client) {
+
     uint8_t attempts = 0;
     while (!client->connected() && attempts < _maxReconnectAttempts) {
       if (_debug) {
         Serial.print(F("Trying to connect to "));
-        Serial.print(host);
+        Serial.print(_host);
         Serial.print(F(" , attempt number: "));
         Serial.println(attempts);
       }
-      client->connectSSL(host, port);
+      client->connectSSL(_host, _port);
       if (_debug) {
         Serial.println(F("Attempt finished"));
       }
@@ -94,6 +94,9 @@ public:
    */
 
   inline void setDebug(bool debug) { _debug = debug; }
+
+private:
+  bool reconnectionRoutine() {}
 };
 
 #endif

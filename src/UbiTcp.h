@@ -35,17 +35,14 @@ public:
   bool sendData(const char *device_label, const char *device_name,
                 char *payload);
   double get(const char *device_label, const char *variable_label);
-  void setDebug(bool debug);
   bool serverConnected();
   ~UbiTCP();
 
 private:
-
   WiFiSSLClient _client_tcps_ubi;
-  
+
   bool waitServerAnswer();
-  float parseTCPAnswer(const char *request_type, char *response);
-  void reconnect(const char *host, const int port);
+  float parseTCPAnswer(const char *request_type);
 };
 
 #endif
