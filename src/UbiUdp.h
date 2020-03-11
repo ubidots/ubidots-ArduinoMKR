@@ -37,7 +37,6 @@ public:
   bool sendData(const char *device_label, const char *device_name,
                 char *payload);
   double get(const char *device_label, const char *variable_label);
-  void setDebug(bool debug);
   bool serverConnected();
   ~UbiUDP();
 

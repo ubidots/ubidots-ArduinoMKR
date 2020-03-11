@@ -47,8 +47,8 @@ UbiUDP::~UbiUDP() {
 bool UbiUDP::sendData(const char *device_label, const char *device_name,
                       char *payload) {
   /* Sends data to Ubidots */
-  _client_udp_ubi.begin(UBIDOTS_TCP_PORT);
-  if (!(_client_udp_ubi.beginPacket(UBI_INDUSTRIAL, UBIDOTS_TCP_PORT) &&
+  _client_udp_ubi.begin(_port);
+  if (!(_client_udp_ubi.beginPacket(_host, _port) &&
         _client_udp_ubi.write(payload) && _client_udp_ubi.endPacket())) {
     if (_debug) {
       Serial.println("ERROR sending values with UDP");
@@ -65,12 +65,6 @@ bool UbiUDP::sendData(const char *device_label, const char *device_name,
 double UbiUDP::get(const char *device_label, const char *variable_label) {
   return ERROR_VALUE;
 }
-
-/**
- * Makes available debug traces
- */
-
-void UbiUDP::setDebug(bool debug) { _debug = debug; }
 
 /*
  * Checks if the socket is still opened with the Ubidots Server
