@@ -48,16 +48,13 @@ UbiTCP::~UbiTCP() {
 
 bool UbiTCP::sendData(const char *device_label, const char *device_name,
                       char *payload) {
-  /* Sends data to Ubidots */
   if (_debug) {
     Serial.print(F("Connecting to "));
-    Serial.println(_host);
+    Serial.print(_host);
+    Serial.print(F(" on Port: "));
+    Serial.println(_port);
   }
 
-  /**
-   * If you change to SSL connection you must change the secureConnection flag
-   * into reconnect method
-   */
   if (!_client_tcps_ubi.connectSSL(_host, _port)) {
     if (_debug) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
@@ -66,6 +63,13 @@ bool UbiTCP::sendData(const char *device_label, const char *device_name,
       return ERROR_VALUE;
     }
   }
+
+  if (_debug) {
+    Serial.println(F("Paylaod"));
+    Serial.println(payload);
+  }
+
+  _client_tcps_ubi.print(payload);
 
   /* Waits for the host's answer */
   if (!waitServerAnswer()) {
