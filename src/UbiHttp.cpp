@@ -57,7 +57,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
     if (_debug) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
-    if (!reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port)) {
+    if (!reconnect<WiFiSSLClient>(&_client_https_ubi)) {
       return ERROR_VALUE;
     }
   }
@@ -66,75 +66,76 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
     if (_debug) {
       Serial.println(F("[ERROR] Could not connect to the server"));
     }
-    return false;
+    return ERROR_VALUE;
   }
 
   bool result = false;
 
-  if (_client_https_ubi.connected()) { // Connect to the host
-    /* Builds the request POST - Please reference this link to know all the
-     * request's structures https://ubidots.com/docs/api/ */
+  /* Builds the request POST - Please reference this link to know all the
+   * request's structures https://ubidots.com/docs/api/ */
 
-    int content_length = strlen(payload);
+  int content_length = strlen(payload);
 
-    uint16_t pathLength = _pathLength(device_label, "");
-    char *path = (char *)malloc(sizeof(char) * pathLength + 1);
-    memset(path, '\0', pathLength);
-    sprintf(path, "/api/v1.6/devices/%s", device_label);
-    Serial.println(path);
-    uint16_t requestLength =
-        _buildRequestLength(device_label, payload, pathLength);
+  uint16_t pathLength = _pathLength(device_label, "");
 
+  char *path = (char *)malloc(sizeof(char) * pathLength + 1);
+
+  memset(path, '\0', pathLength);
+
+  sprintf(path, "/api/v1.6/devices/%s", device_label);
+
+  uint16_t requestLength =
+      _buildRequestLength(device_label, payload, pathLength);
+      
+  if (_debug) {
     Serial.println(F("Making request to Ubidots:\n"));
+  }
 
-    char *request = (char *)malloc(sizeof(char) * requestLength + 1);
-    sprintf(request,
-            "POST %s HTTP/1.1\r\n"
-            "Host: %s\r\n"
-            "User-Agent: %s\r\n"
-            "X-Auth-Token: %s\r\n"
-            "Connection: close\r\n"
-            "Content-Type: application/json\r\n"
-            "Content-Length: %i\r\n"
-            "\r\n"
-            "%s"
-            "\r\n",
-            path, _host, _user_agent, _token, content_length, payload);
+  char *request = (char *)malloc(sizeof(char) * requestLength + 1);
+  sprintf(request,
+          "POST %s HTTP/1.1\r\n"
+          "Host: %s\r\n"
+          "User-Agent: %s\r\n"
+          "X-Auth-Token: %s\r\n"
+          "Connection: close\r\n"
+          "Content-Type: application/json\r\n"
+          "Content-Length: %i\r\n"
+          "\r\n"
+          "%s"
+          "\r\n",
+          path, _host, _user_agent, _token, content_length, payload);
 
+  if (_debug) {
+    Serial.println(request);
+  }
+  _client_https_ubi.print(request);
+
+  _client_https_ubi.flush();
+
+  free(path);
+  free(request);
+
+  /* Reads the response from the server */
+  if (waitServerAnswer()) {
     if (_debug) {
-      Serial.println(request);
-    }
-    _client_https_ubi.print(request);
-    _client_https_ubi.flush();
+      Serial.println(F("\nUbidots' Server response:\n"));
 
-    free(path);
-    free(request);
+      const char *serverReponse = _client_https_ubi.readString().c_str();
 
-    /* Reads the response from the server */
-    if (waitServerAnswer()) {
-      if (_debug) {
-        Serial.println(F("\nUbidots' Server response:\n"));
-
-        const char *serverReponse = _client_https_ubi.readString().c_str();
-        if (strstr(serverReponse, "400 Bad Request") != NULL ||
-            strstr(serverReponse, "Internal Server Error") != NULL) {
-          Serial.println(F("[Error] There has been an error in the request"));
-          _client_https_ubi.flush();
-          _client_https_ubi.stop();
-        } else {
-          Serial.println(serverReponse);
-        }
-      }
-
-      result = true;
-    } else {
-      if (_debug) {
-        Serial.println(F("Could not read server's response"));
+      if (strstr(serverReponse, "400 Bad Request") != NULL ||
+          strstr(serverReponse, "Internal Server Error") != NULL) {
+        Serial.println(F("[Error] There has been an error in the request"));
+        _client_https_ubi.flush();
+        _client_https_ubi.stop();
+      } else {
+        Serial.println(serverReponse);
       }
     }
-  } else { // Could not connect to the server
+
+    result = true;
+  } else {
     if (_debug) {
-      Serial.println(F("Could not send data to ubidots using HTTP"));
+      Serial.println(F("Could not read server's response"));
     }
   }
 
@@ -180,7 +181,7 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
     if (_debug) {
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
-    if (!reconnect<WiFiSSLClient>(&_client_https_ubi, _host, _port)) {
+    if (!reconnect<WiFiSSLClient>(&_client_https_ubi)) {
       return ERROR_VALUE;
     }
   }
@@ -236,16 +237,16 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
 double UbiHTTP::_parseServerAnswer() {
 
   /**
-   * @param _charResponseLength 3 is the maximun amount of digits for the length
-   * to have
+   * @param _charResponseLength 3 is the maximun amount of digits for the
+   * length to have
    */
   char *_charLength = (char *)malloc(sizeof(char) * 3);
 
   readServerAnswer(_charLength);
 
   /**
-   * The server respond the length of the value in HEX so it has to be converted
-   * to DEC
+   * The server respond the length of the value in HEX so it has to be
+   * converted to DEC
    * */
   uint8_t length = UbiUtils::hexadecimalToDecimal(_charLength);
 
