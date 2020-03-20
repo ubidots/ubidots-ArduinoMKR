@@ -28,8 +28,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiUDP::UbiUDP(const char *host, const int port, const char *user_agent,
-               const char *token)
+UbiUDP::UbiUDP(const char *host, const int port, const char *user_agent, const char *token)
     : UbiProtocol(host, user_agent, token, port) {}
 
 /**************************************************************************
@@ -44,12 +43,10 @@ UbiUDP::~UbiUDP() {
   _client_udp_ubi.stop();
 }
 
-bool UbiUDP::sendData(const char *device_label, const char *device_name,
-                      char *payload) {
+bool UbiUDP::sendData(const char *device_label, const char *device_name, char *payload) {
   /* Sends data to Ubidots */
   _client_udp_ubi.begin(_port);
-  if (!(_client_udp_ubi.beginPacket(_host, _port) &&
-        _client_udp_ubi.write(payload) && _client_udp_ubi.endPacket())) {
+  if (!(_client_udp_ubi.beginPacket(_host, _port) && _client_udp_ubi.write(payload) && _client_udp_ubi.endPacket())) {
     if (_debug) {
       Serial.println("ERROR sending values with UDP");
     }
@@ -62,9 +59,7 @@ bool UbiUDP::sendData(const char *device_label, const char *device_name,
   return true;
 }
 
-double UbiUDP::get(const char *device_label, const char *variable_label) {
-  return ERROR_VALUE;
-}
+double UbiUDP::get(const char *device_label, const char *variable_label) { return ERROR_VALUE; }
 
 /*
  * Checks if the socket is still opened with the Ubidots Server

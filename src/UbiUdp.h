@@ -32,18 +32,15 @@ Inc
 
 class UbiUDP : public UbiProtocol {
 public:
-  UbiUDP(const char *host, const int port, const char *user_agent,
-         const char *token);
-  bool sendData(const char *device_label, const char *device_name,
-                char *payload);
+  UbiUDP(const char *host, const int port, const char *user_agent, const char *token);
+  bool sendData(const char *device_label, const char *device_name, char *payload);
   double get(const char *device_label, const char *variable_label);
   bool serverConnected();
   ~UbiUDP();
 
 private:
-
   WiFiUDP _client_udp_ubi;
-  
+
   bool waitServerAnswer();
   bool parseTCPAnswer(char *response);
   void reconnect(const char *host, const int port);

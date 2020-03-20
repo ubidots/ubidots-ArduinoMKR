@@ -29,16 +29,13 @@ Inc
 
 class UbiHTTP : public UbiProtocol {
 public:
-  UbiHTTP(const char *host, const int port, const char *user_agent,
-          const char *token);
-  bool sendData(const char *device_label, const char *device_name,
-                char *payload);
+  UbiHTTP(const char *host, const int port, const char *user_agent, const char *token);
+  bool sendData(const char *device_label, const char *device_name, char *payload);
   double get(const char *device_label, const char *variable_label);
   bool serverConnected();
   ~UbiHTTP();
 
 private:
-
   WiFiSSLClient _client_https_ubi;
 
   bool waitServerAnswer();
@@ -47,8 +44,7 @@ private:
   double _parseServerAnswer();
   uint16_t _requestLineLength(char *path);
   uint16_t _pathLength(const char *device_label, const char *variable_label);
-  uint16_t _buildRequestLength(const char *device_label, const char *payload,
-                               uint16_t path);
+  uint16_t _buildRequestLength(const char *device_label, const char *payload, uint16_t path);
 };
 
 #endif

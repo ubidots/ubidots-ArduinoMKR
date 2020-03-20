@@ -28,8 +28,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent,
-               const char *token)
+UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent, const char *token)
     : UbiProtocol(host, user_agent, token, port) {}
 
 /**************************************************************************
@@ -46,8 +45,7 @@ UbiTCP::~UbiTCP() {
  * Cloud Functions
  ***************************************************************************/
 
-bool UbiTCP::sendData(const char *device_label, const char *device_name,
-                      char *payload) {
+bool UbiTCP::sendData(const char *device_label, const char *device_name, char *payload) {
   if (_debug) {
     Serial.print(F("Connecting to "));
     Serial.print(_host);

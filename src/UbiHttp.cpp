@@ -30,8 +30,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiHTTP::UbiHTTP(const char *host, const int port, const char *user_agent,
-                 const char *token)
+UbiHTTP::UbiHTTP(const char *host, const int port, const char *user_agent, const char *token)
     : UbiProtocol(host, user_agent, token, port) {}
 
 /**************************************************************************
@@ -44,8 +43,7 @@ UbiHTTP::~UbiHTTP() {
   delete[] _token;
 }
 
-bool UbiHTTP::sendData(const char *device_label, const char *device_name,
-                       char *payload) {
+bool UbiHTTP::sendData(const char *device_label, const char *device_name, char *payload) {
   /* Connecting the client */
 
   if (_debug) {
@@ -84,9 +82,8 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
 
   sprintf(path, "/api/v1.6/devices/%s", device_label);
 
-  uint16_t requestLength =
-      _buildRequestLength(device_label, payload, pathLength);
-      
+  uint16_t requestLength = _buildRequestLength(device_label, payload, pathLength);
+
   if (_debug) {
     Serial.println(F("Making request to Ubidots:\n"));
   }
@@ -122,8 +119,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
 
       const char *serverReponse = _client_https_ubi.readString().c_str();
 
-      if (strstr(serverReponse, "400 Bad Request") != NULL ||
-          strstr(serverReponse, "Internal Server Error") != NULL) {
+      if (strstr(serverReponse, "400 Bad Request") != NULL || strstr(serverReponse, "Internal Server Error") != NULL) {
         Serial.println(F("[Error] There has been an error in the request"));
         _client_https_ubi.flush();
         _client_https_ubi.stop();
@@ -152,21 +148,18 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name,
  * @param pathLength Lengh of the request line
  * @return uint16_t Total length of the request
  */
-uint16_t UbiHTTP::_buildRequestLength(const char *device_label,
-                                      const char *payload,
-                                      uint16_t pathLength) {
-  uint16_t endpointLength =
-      strlen("POST  HTTP/1.1\r\n"
-             "Host: \r\n"
-             "User-Agent: \r\n"
-             "X-Auth-Token: \r\n"
-             "Connection: close\r\n"
-             "Content-Type: application/json\r\n"
-             "Content-Length: \r\n"
-             "\r\n"
-             "\r\n") +
-      pathLength + strlen(device_label) + strlen(_host) + strlen(_user_agent) +
-      strlen(_token) + UbiUtils::countDigit(strlen(payload)) + strlen(payload);
+uint16_t UbiHTTP::_buildRequestLength(const char *device_label, const char *payload, uint16_t pathLength) {
+  uint16_t endpointLength = strlen("POST  HTTP/1.1\r\n"
+                                   "Host: \r\n"
+                                   "User-Agent: \r\n"
+                                   "X-Auth-Token: \r\n"
+                                   "Connection: close\r\n"
+                                   "Content-Type: application/json\r\n"
+                                   "Content-Length: \r\n"
+                                   "\r\n"
+                                   "\r\n") +
+                            pathLength + strlen(device_label) + strlen(_host) + strlen(_user_agent) + strlen(_token) +
+                            UbiUtils::countDigit(strlen(payload)) + strlen(payload);
 
   return endpointLength;
 }
@@ -287,8 +280,7 @@ uint16_t UbiHTTP::_requestLineLength(char *path) {
                                    "Content-Type: application/json\r\n"
                                    "Connection: close\r\n"
                                    "\r\n") +
-                            strlen(path) + strlen(_host) + strlen(_token) +
-                            strlen(_user_agent);
+                            strlen(path) + strlen(_host) + strlen(_token) + strlen(_user_agent);
   return endpointLength;
 }
 
@@ -299,10 +291,8 @@ uint16_t UbiHTTP::_requestLineLength(char *path) {
  * @param variable_label variable label to be updated or fetched
  * @return uint16_t  Lenght of the endpoint path
  */
-uint16_t UbiHTTP::_pathLength(const char *device_label,
-                              const char *variable_label) {
-  uint16_t endpointLength = strlen("/api/v1.6/devices///lv") +
-                            strlen(device_label) + strlen(variable_label);
+uint16_t UbiHTTP::_pathLength(const char *device_label, const char *variable_label) {
+  uint16_t endpointLength = strlen("/api/v1.6/devices///lv") + strlen(device_label) + strlen(variable_label);
   return endpointLength;
 }
 
@@ -331,8 +321,7 @@ void UbiHTTP::readServerAnswer(char *_serverResponse) {
        * */
       sprintf(_serverResponse, "%f", ERROR_VALUE);
       if (_debug) {
-        Serial.println(
-            F("[ERROR]The value from the server exceeded memory capacity"));
+        Serial.println(F("[ERROR]The value from the server exceeded memory capacity"));
       }
       break;
     } else if (*c == '<') {

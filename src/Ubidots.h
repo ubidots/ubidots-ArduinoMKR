@@ -31,14 +31,11 @@ Inc
 class Ubidots {
 public:
   explicit Ubidots(const char *token, IotProtocol iotProtocol);
-  explicit Ubidots(const char *token, UbiServer server = UBI_INDUSTRIAL,
-                   IotProtocol iotProtocol = UBI_TCP);
+  explicit Ubidots(const char *token, UbiServer server = UBI_INDUSTRIAL, IotProtocol iotProtocol = UBI_TCP);
   void add(const char *variable_label, float value);
   void add(const char *variable_label, float value, char *context);
-  void add(const char *variable_label, float value, char *context,
-           unsigned long dot_timestamp_seconds);
-  void add(const char *variable_label, float value, char *context,
-           unsigned long dot_timestamp_seconds,
+  void add(const char *variable_label, float value, char *context, unsigned long dot_timestamp_seconds);
+  void add(const char *variable_label, float value, char *context, unsigned long dot_timestamp_seconds,
            unsigned int dot_timestamp_millis);
   void addContext(char *key_label, char *key_value);
   void getContext(char *context_result);
@@ -55,14 +52,17 @@ public:
   ~Ubidots();
 
 private:
-  char _deviceType[25];
+  bool _debug = true;
+  int8_t _current_context = 0;
   uint8_t _maxConnectionAttempts = 20;
+
+  char *_deviceType;
+  char *_defaultDeviceLabel;
+
   UbiProtocolHandler *_cloudProtocol;
-  char _defaultDeviceLabel[18];
   ContextUbi *_context;
   IotProtocol _iotProtocol;
-  int8_t _current_context = 0;
-  bool _debug = false;
+
   void _builder(const char *token, UbiServer server, IotProtocol iot_protocol);
   void _getDeviceMac(char macAddr[]);
 };
