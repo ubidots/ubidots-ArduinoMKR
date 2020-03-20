@@ -42,7 +42,6 @@ public:
 private:
   int8_t _current_value = 0;
   int _connectionTimeout = 5000;
-  bool _dirty = false;
 
   UbiProtocol *_ubiProtocol;
   IotProtocol _iot_protocol;

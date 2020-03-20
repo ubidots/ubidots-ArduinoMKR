@@ -73,7 +73,6 @@ FUNCTIONS TO SEND DATA
 
 void UbiProtocolHandler::add(const char *variable_label, float value, char *context,
                              unsigned long dot_timestamp_seconds, unsigned int dot_timestamp_millis) {
-  _dirty = true;
   (_dots + _current_value)->variable_label = variable_label;
   (_dots + _current_value)->dot_value = value;
   (_dots + _current_value)->dot_context = context;
@@ -112,7 +111,6 @@ bool UbiProtocolHandler::send(const char *device_label, const char *device_name)
   bool result = _ubiProtocol->sendData(device_label, device_name, payload);
   free(payload);
   if (result) {
-    _dirty = false;
     _current_value = 0;
   }
 
