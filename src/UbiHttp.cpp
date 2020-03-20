@@ -30,8 +30,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiHTTP::UbiHTTP(const char *host, const int port, const char *user_agent, const char *token)
-    : UbiProtocol(host, user_agent, token, port) {}
+UbiHTTP::UbiHTTP(const char *host, const int port, const char *token) : UbiProtocol(host, token, port) {}
 
 /**************************************************************************
  * Destructor
@@ -39,7 +38,6 @@ UbiHTTP::UbiHTTP(const char *host, const int port, const char *user_agent, const
 
 UbiHTTP::~UbiHTTP() {
   delete[] _host;
-  delete[] _user_agent;
   delete[] _token;
 }
 
@@ -100,7 +98,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name, char *
           "\r\n"
           "%s"
           "\r\n",
-          path, _host, _user_agent, _token, content_length, payload);
+          path, _host, USER_AGENT, _token, content_length, payload);
 
   if (_debug) {
     Serial.println(request);
@@ -158,7 +156,7 @@ uint16_t UbiHTTP::_buildRequestLength(const char *device_label, const char *payl
                                    "Content-Length: \r\n"
                                    "\r\n"
                                    "\r\n") +
-                            pathLength + strlen(device_label) + strlen(_host) + strlen(_user_agent) + strlen(_token) +
+                            pathLength + strlen(device_label) + strlen(_host) + strlen(USER_AGENT) + strlen(_token) +
                             UbiUtils::countDigit(strlen(payload)) + strlen(payload);
 
   return endpointLength;
@@ -198,7 +196,7 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
           "Content-Type: application/json\r\n"
           "Connection: close\r\n"
           "\r\n",
-          path, _host, _token, _user_agent);
+          path, _host, _token, USER_AGENT);
 
   if (_debug) {
     Serial.println(F("Request sent"));
@@ -280,7 +278,7 @@ uint16_t UbiHTTP::_requestLineLength(char *path) {
                                    "Content-Type: application/json\r\n"
                                    "Connection: close\r\n"
                                    "\r\n") +
-                            strlen(path) + strlen(_host) + strlen(_token) + strlen(_user_agent);
+                            strlen(path) + strlen(_host) + strlen(_token) + strlen(USER_AGENT);
   return endpointLength;
 }
 

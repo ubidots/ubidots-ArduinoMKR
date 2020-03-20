@@ -28,8 +28,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiUDP::UbiUDP(const char *host, const int port, const char *user_agent, const char *token)
-    : UbiProtocol(host, user_agent, token, port) {}
+UbiUDP::UbiUDP(const char *host, const int port, const char *token) : UbiProtocol(host, token, port) {}
 
 /**************************************************************************
  * Destructor
@@ -37,7 +36,6 @@ UbiUDP::UbiUDP(const char *host, const int port, const char *user_agent, const c
 
 UbiUDP::~UbiUDP() {
   delete[] _host;
-  delete[] _user_agent;
   delete[] _token;
   _client_udp_ubi.flush();
   _client_udp_ubi.stop();

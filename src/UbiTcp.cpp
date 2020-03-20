@@ -28,8 +28,7 @@ Inc
  * Overloaded constructors
  ***************************************************************************/
 
-UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent, const char *token)
-    : UbiProtocol(host, user_agent, token, port) {}
+UbiTCP::UbiTCP(const char *host, const int port, const char *token) : UbiProtocol(host, token, port) {}
 
 /**************************************************************************
  * Destructor
@@ -37,7 +36,6 @@ UbiTCP::UbiTCP(const char *host, const int port, const char *user_agent, const c
 
 UbiTCP::~UbiTCP() {
   delete[] _host;
-  delete[] _user_agent;
   delete[] _token;
 }
 
@@ -119,7 +117,7 @@ double UbiTCP::get(const char *device_label, const char *variable_label) {
 
   /* Builds the request POST - Please reference this link to know all the
    * request's structures https://ubidots.com/docs/api/ */
-  _client_tcps_ubi.print(_user_agent);
+  _client_tcps_ubi.print(USER_AGENT);
   _client_tcps_ubi.print("|LV|");
   _client_tcps_ubi.print(_token);
   _client_tcps_ubi.print("|");
@@ -131,7 +129,7 @@ double UbiTCP::get(const char *device_label, const char *variable_label) {
   if (_debug) {
     Serial.println("----");
     Serial.println("Payload for request:");
-    Serial.print(_user_agent);
+    Serial.print(USER_AGENT);
     Serial.print("|LV|");
     Serial.print(_token);
     Serial.print("|");

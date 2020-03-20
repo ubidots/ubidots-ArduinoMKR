@@ -43,16 +43,16 @@ UbiProtocol *UbiBuilder::builder() {
 }
 
 UbiProtocol *builderTcp() {
-  UbiProtocol *tcpInstance = new UbiTCP(_host, UBIDOTS_TCPS_PORT, USER_AGENT, _token);
+  UbiProtocol *tcpInstance = new UbiTCP(_host, UBIDOTS_TCPS_PORT, _token);
   return tcpInstance;
 }
 
 UbiProtocol *builderHttp() {
-  UbiProtocol *httpInstance = new UbiHTTP(_host, UBIDOTS_HTTPS_PORT, USER_AGENT, _token);
+  UbiProtocol *httpInstance = new UbiHTTP(_host, UBIDOTS_HTTPS_PORT, _token);
   return httpInstance;
 }
 
 UbiProtocol *builderUdp() {
-  UbiProtocol *udpInstance = new UbiUDP(_host, UBIDOTS_TCP_PORT, USER_AGENT, _token);
+  UbiProtocol *udpInstance = new UbiUDP(_host, UBIDOTS_TCP_PORT, _token);
   return udpInstance;
 }
