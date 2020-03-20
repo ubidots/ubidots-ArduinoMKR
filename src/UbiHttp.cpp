@@ -223,7 +223,7 @@ double UbiHTTP::get(const char *device_label, const char *variable_label) {
   double value = _parseServerAnswer();
   _client_https_ubi.flush();
   _client_https_ubi.stop();
-  // return 0;
+
   return value;
 }
 
@@ -235,7 +235,7 @@ double UbiHTTP::_parseServerAnswer() {
    */
   char *_charLength = (char *)malloc(sizeof(char) * 3);
 
-  readServerAnswer(_charLength);
+  _parsePartialServerAnswer(_charLength);
 
   /**
    * The server respond the length of the value in HEX so it has to be
@@ -250,7 +250,7 @@ double UbiHTTP::_parseServerAnswer() {
 
   char *_charValue = (char *)malloc(sizeof(char) * length + 1);
 
-  readServerAnswer(_charValue);
+  _parsePartialServerAnswer(_charValue);
 
   double value = strtof(_charValue, NULL);
 
@@ -300,7 +300,7 @@ uint16_t UbiHTTP::_pathLength(const char *device_label, const char *variable_lab
  * @arg response [Mandatory] Pointer to store the server's answer
  */
 
-void UbiHTTP::readServerAnswer(char *_serverResponse) {
+void UbiHTTP::_parsePartialServerAnswer(char *_serverResponse) {
   bool _firstChar = true;
   while (_client_https_ubi.available()) {
     if (_firstChar) {

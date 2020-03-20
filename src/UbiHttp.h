@@ -39,7 +39,7 @@ private:
   WiFiSSLClient _client_https_ubi;
 
   bool waitServerAnswer();
-  void readServerAnswer(char *response);
+  void _parsePartialServerAnswer(char *response);
 
   double _parseServerAnswer();
   uint16_t _requestLineLength(char *path);
