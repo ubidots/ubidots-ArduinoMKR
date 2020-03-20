@@ -38,6 +38,6 @@ const uint8_t MAX_VALUES = 10;
 const float ERROR_VALUE = -3.4028235E+8;
 const int MAX_BUFFER_SIZE = 700;
 static UbiServer UBI_INDUSTRIAL = "industrial.api.ubidots.com";
-const int SUPPORTED_PROTOCOLS = 3;
+const int NUMBER_OF_SUPPORTED_PROTOCOLS = 3;
 
 #endif

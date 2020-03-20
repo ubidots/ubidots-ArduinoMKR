@@ -45,7 +45,7 @@ public:
 
 private:
   IotProtocol _iot_protocol;
-  builderProtocol command_list[SUPPORTED_PROTOCOLS];
+  builderProtocol command_list[NUMBER_OF_SUPPORTED_PROTOCOLS];
 };
 
 #endif
