@@ -25,9 +25,10 @@ The Arduino MKR WiFi 1010 is the easiest point of entry to basic IoT and pico-ne
 7. Select the .ZIP file of Ubidots and then "**Accept**" or "**Choose**".
 8. Close the Arduino IDE and open it again.
 
-**NOTE:** To be able to use this device with TCP over TLS1.2 you must add manually the certificate from Ubidots to the module following the section **Certificate uploading** from this [guide](https://www.arduino.cc/en/Tutorial/FirmwareUpdater), and add the next line required for the process in the *Add Domain* button.
+**NOTE:** To be able to use this device with TCP over TLS1.2 or HTTPS you must add manually the certificates from Ubidots to the module following the steps into the section **Certificate uploading** in this [guide](https://www.arduino.cc/en/Tutorial/FirmwareUpdater), further add the following domains required for the process in the *Add Domain* button from the *FirwareUpdater* provided by the MKR suit.
 
 `industrial.api.ubidots.com:9812`
+`industrial.api.ubidots.com:443`
 
 
 # Documentation
@@ -46,7 +47,7 @@ Ubidots(const char* token, UbiServer server, IotProtocol iot_protocol)
 
 Creates an Ubidots instance.
 
-**NOTE:** If you use HTTP or TCP to send data, the client will implement TLS 2.0 using the ![native ESP8266 secure client](https://github.com/esp8266/Arduino/blob/master/doc/esp8266wifi/client-secure-examples.rst) to secure your data. Keep in mind that due to the security checks needed, the packet may take a little more time to be sent than without TLS. If you wish to send data insecurely, use UDP or any of the available examples at our ![docs](https://ubidots.com/docs/hw/).
+**NOTE:** If you use HTTP or TCP to send data, the client will implement TLS 2.0 using the native MKR1010 secure client to secure your data. Keep in mind that due to the security checks needed, the packet may take a little more time to be sent than without TLS. If you wish to send data insecurely, use UDP or any of the available examples at our ![docs](https://ubidots.com/docs/hw/).
 
 As Ubidots makes its best to secure your data, we do not guarantee any issue, data miss or external sniff coming from the native secure client or bugs in the library.
 
