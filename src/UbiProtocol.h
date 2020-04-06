@@ -41,8 +41,7 @@ protected:
   int _port;
 
 public:
-  explicit UbiProtocol(const char *host, const char *token, int port)
-      : _host(host),  _token(token), _port(port) {
+  explicit UbiProtocol(const char *host, const char *token, int port) : _host(host), _token(token), _port(port) {
     _timeout = 5000;
     _debug = false;
     _maxReconnectAttempts = 5;
