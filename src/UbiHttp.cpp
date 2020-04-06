@@ -308,28 +308,26 @@ void UbiHTTP::_parsePartialServerAnswer(char *_serverResponse) {
     char *c = (char *)malloc(sizeof(char) * 2);
     sprintf(c, "%c", _client_https_ubi.read());
     if (*c == '\r') {
-      // Get the last character \n to enable the function to run again
+      // Get the last character -> \n to let the _parsePartialServerAnswer function to run again
       _client_https_ubi.read();
       free(c);
       break;
-    } else if (*c == 'e') {
-      /**
-       * After 18 digits it will show the response in scientific notation,and
-       * the arquitechture does not have space store such a huge number
-       * */
-      sprintf(_serverResponse, "%f", ERROR_VALUE);
-      if (_debug) {
-        Serial.println(F("[ERROR]The value from the server exceeded memory capacity"));
-      }
-      break;
-    } else if (*c == '<') {
-      sprintf(_serverResponse, "%f", ERROR_VALUE);
-      if (_debug) {
-        Serial.println(F("[ERROR] Internal Server Error"));
-      }
-      break;
     } else {
       strcat(_serverResponse, c);
+    }
+  }
+
+  if (strstr(_serverResponse, "404001") != NULL && strstr(_serverResponse, "{") != NULL) {
+    sprintf(_serverResponse, "%f", ERROR_VALUE);
+    if (_debug) {
+      Serial.println("[ERROR] Either the device or the variable does not exist");
+    }
+  }
+
+  if (strstr(_serverResponse, "<html>") != NULL) {
+    sprintf(_serverResponse, "%f", ERROR_VALUE);
+    if (_debug) {
+      Serial.println(F("[ERROR] Internal Server Error"));
     }
   }
 }
