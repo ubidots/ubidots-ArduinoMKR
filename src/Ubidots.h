@@ -57,7 +57,7 @@ private:
   uint8_t _maxConnectionAttempts = 20;
 
   char *_deviceType;
-  char *_defaultDeviceLabel;
+  char _defaultDeviceLabel[18] = {0};
 
   UbiProtocolHandler *_cloudProtocol;
   ContextUbi *_context;

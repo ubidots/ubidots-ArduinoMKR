@@ -39,8 +39,6 @@ void Ubidots::_builder(const char *token, UbiServer server, IotProtocol iotProto
   _context = (ContextUbi *)malloc(MAX_VALUES * sizeof(ContextUbi));
   _deviceType = (char *)malloc(sizeof(char) * 25);
   _deviceType = NULL;
-  _defaultDeviceLabel = (char *)malloc(sizeof(char) * 18);
-  _defaultDeviceLabel = NULL;
   _cloudProtocol = new UbiProtocolHandler(token, server, iotProtocol);
 }
 
@@ -202,10 +200,15 @@ bool Ubidots::wifiConnected() { return WiFi.status() == WL_CONNECTED; }
 bool Ubidots::serverConnected() { return _cloudProtocol->serverConnected(); }
 
 /* Obtains the device's MAC */
-void Ubidots::_getDeviceMac(char macAddr[]) {
+void Ubidots::_getDeviceMac(char *macAddr) {
   byte mac[6];
   WiFi.macAddress(mac);
-  sprintf(macAddr, "%.2X%.2X%.2X%.2X%.2X%.2X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  sprintf(macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+  if (_debug) {
+    Serial.print("MAC: ");
+    Serial.println(macAddr);
+  }
+  sprintf(_defaultDeviceLabel, macAddr);
 }
 
 /*
