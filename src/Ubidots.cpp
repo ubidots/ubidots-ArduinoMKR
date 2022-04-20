@@ -34,7 +34,7 @@ Ubidots::Ubidots(const char *token, IotProtocol iotProtocol) { _builder(token, U
 Ubidots::Ubidots(const char *token, UbiServer server, IotProtocol iotProtocol) { _builder(token, server, iotProtocol); }
 
 void Ubidots::_builder(const char *token, UbiServer server, IotProtocol iotProtocol) {
-  _getDeviceMac(_defaultDeviceLabel);
+  //_getDeviceMac(_defaultDeviceLabel);
   _iotProtocol = iotProtocol;
   _context = (ContextUbi *)malloc(MAX_VALUES * sizeof(ContextUbi));
   _deviceType = (char *)malloc(sizeof(char) * 25);
@@ -176,9 +176,12 @@ bool Ubidots::wifiConnect(const char *ssid, const char *password) {
   }
 
   WiFi.begin(ssid, password);
+  delay(5000);
+  _getDeviceMac(_defaultDeviceLabel);
+  
 
   while (WiFi.status() != WL_CONNECTED && maxConnectionAttempts < _maxConnectionAttempts) {
-    delay(500);
+    delay(1000);
     Serial.print(".");
     maxConnectionAttempts++;
   }
