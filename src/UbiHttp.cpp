@@ -54,7 +54,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name, char *
       Serial.println(F("Connection Failed to Ubidots - Try Again"));
     }
     if (!reconnect<WiFiSSLClient>(&_client_https_ubi)) {
-      return ERROR_VALUE;
+      return false;
     }
   }
 
@@ -62,7 +62,7 @@ bool UbiHTTP::sendData(const char *device_label, const char *device_name, char *
     if (_debug) {
       Serial.println(F("[ERROR] Could not connect to the server"));
     }
-    return ERROR_VALUE;
+    return false;
   }
 
   bool result = false;
